@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>پارسیان‌گلد</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111827;font-family:Tahoma,Arial,sans-serif}.app{max-width:520px;margin:auto;padding:24px 16px}.title{font-size:28px;font-weight:900}.sub{color:#6b7280;margin:7px 0 20px;font-size:13px}.card{background:white;border:1px solid #e5e7eb;border-radius:22px;padding:18px;margin:12px 0;box-shadow:0 8px 30px #0000000b}label{display:block;color:#6b7280;font-size:13px;margin-bottom:8px}input{width:100%;font-size:22px;padding:14px;border:1px solid #d1d5db;border-radius:14px;direction:ltr;text-align:left}button{width:100%;padding:14px;border:0;border-radius:14px;background:#111827;color:white;font-size:15px;font-weight:bold;margin-top:12px}.price{font-size:30px;font-weight:900;margin:8px 0}.muted{color:#6b7280;font-size:12px}.row{display:flex;justify-content:space-between;gap:10px}.badge{background:#f3f4f6;border-radius:20px;padding:7px 10px;font-size:12px}.msg{font-size:12px;color:#6b7280;line-height:1.8;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="title">پارسیان‌گلد 🪙</div>
+<div class="sub">محاسبه ارزش سکه پارسیان بر اساس طلای ۱۸ عیار</div>
+<div class="card">
+<label>وزن سکه (گرم)</label>
+<input id="w" type="number" min="0" step="0.001" value="0.500">
+<button id="b">به‌روزرسانی نرخ</button>
+</div>
+<div class="card">
+<div class="row"><span class="muted">طلای ۱۸ عیار / ۷۵۰</span><span id="s" class="badge">در حال دریافت…</span></div>
+<div id="p" class="price">—</div><div class="muted">تومان برای هر گرم</div>
+</div>
+<div class="card">
+<div class="muted">ارزش طلای سکه</div>
+<div id="v" class="price">—</div>
+<div class="muted">بدون اجرت و حاشیه بازار</div>
+</div>
+<div class="card"><div class="msg">این محاسبه ارزش طلای داخل سکه است و لزوماً قیمت خرید و فروش بازار سکه پارسیان نیست.</div><div id="u" class="msg"></div></div>
+</div>
+<script>
+const w=document.getElementById('w'),p=document.getElementById('p'),v=document.getElementById('v'),s=document.getElementById('s'),u=document.getElementById('u');let price=0;
+const f=n=>new Intl.NumberFormat('fa-IR').format(Math.round(n));
+function calc(){let x=parseFloat(w.value);v.textContent=x>0&&price?f(x*price)+' تومان':'—'}
+async function getPrice(){
+s.textContent='در حال دریافت…';
+try{
+const r=await fetch('https://api.tgju.org/v1/widget/v2',{cache:'no-store'});const t=await r.text();
+const m=t.match(/(?:geram18|طلا ۱۸|طلای 18)[^\d]{0,200}(\d{6,12})/i)||t.match(/(\d{8,12})/);
+if(!m)throw 0;let q=Number(m[1]);if(q>1000000)q/=10;price=q;p.textContent=f(q);calc();s.textContent='زنده';u.textContent='آخرین به‌روزرسانی: '+new Date().toLocaleTimeString('fa-IR');}
+catch(e){s.textContent='اتصال ناموفق';u.textContent='اگر سرویس نرخ در مرورگر قابل دسترس نباشد، قیمت نمایش داده نمی‌شود.'}
+}
+w.addEventListener('input',calc);document.getElementById('b').addEventListener('click',getPrice);getPrice();setInterval(getPrice,60000);
+</script>
+</body>
+</html>
